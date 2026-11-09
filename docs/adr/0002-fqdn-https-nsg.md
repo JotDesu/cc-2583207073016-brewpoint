@@ -32,8 +32,7 @@ Rollback: `sudo cp /etc/caddy/Caddyfile.bak /etc/caddy/Caddyfile && sudo systemc
 
 ## Alternatif yang dipertimbangkan
 
-[ISI: alternatif yang kamu pertimbangkan saat memutuskan, misalnya domain sendiri atau Nginx + certbot. Tidak ada di berkas bukti, jadi tidak saya karang.]
-
+Tidak ada alternatif lain yang dipertimbangkan secara tertulis. Label DNS bawaan Azure dan Caddy dipilih karena tanpa biaya tambahan dan sertifikat diperbarui otomatis.
 ## Konsekuensi
 
 Positif:
