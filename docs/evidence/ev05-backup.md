@@ -1,21 +1,27 @@
-# EV-05 — Backup SQLite ke Penyimpanan Terpisah
+# EV-05 — Backup SQLite
 
-Status: BELUM ADA (RENCANA). Database SQLite belum dibuat (M05).
-Metode: SQLite Online Backup API (`.backup`), bukan `cp` pada file yang sedang ditulis. RPO target ≤ 24 jam.
+Status: SEBAGIAN (backup konsisten lokal LULUS; penyimpanan off-site, jadwal, dan enkripsi BELUM)
+Tanggal/waktu: 09-11-2026 20:09:52 WIB
+Commit dasar: 7b881b5 (feat(db): add SQLite schema and init script for BrewPoint, M05); path DB: /srv/cc-m03/data/brewpoint.db (di luar repo; .gitignore memuat data/*.db*)
+Data: SINTETIS (6 menu, 2 akun uji; 0 transaksi). Bukan data kasir produksi.
 
-## Rencana
-1. Buat storage account Azure (LRS) terpisah dari VM; container privat `brewpoint-backup`. Akses lewat SAS/identitas dengan hak minimal. Kredensial TIDAK masuk repo.
-2. Skrip `/srv/cc-m03/scripts/backup.sh` (dijalankan systemd timer 02:00):
-```bash
-set -euo pipefail
-TS=$(date +%Y%m%d-%H%M%S); OUT=/var/backups/brewpoint/brewpoint-$TS.db
-sqlite3 /srv/cc-m03/data/brewpoint.db ".backup '$OUT'"
-sqlite3 "$OUT" "PRAGMA integrity_check;"     # harus ok
-sha256sum "$OUT" > "$OUT.sha256"
-# unggah ke Blob (azcopy/az cli); retensi 7 harian + 4 mingguan
-```
-3. Enkripsi bila data pribadi (hash password) ikut tersimpan; batasi izin folder (700).
+## Metode
+SQLite Online Backup API lewat `sqlite3 .backup` [3], bukan `cp` pada file yang sedang ditulis. Mode jurnal DB: WAL.
 
-## Hasil (isi setelah dijalankan)
-| Tanggal/waktu | File | Ukuran | sha256 | integrity_check | Lokasi off-site | Status |
-|---|---|---|---|---|---|---|
+## Prosedur dan hasil
+| Langkah | Perintah | Expected | Aktual | Status |
+|---|---|---|---|---|
+| Backup konsisten | `time sqlite3 data/brewpoint.db ".backup '/tmp/brew-backup.db'"` | selesai tanpa galat | real 0m0,019s | LULUS |
+| Integritas backup | `sqlite3 /tmp/brew-backup.db "PRAGMA integrity_check;"` | ok | ok | LULUS |
+| Jumlah baris | `SELECT COUNT(*)` per tabel | sama dengan sumber | users 2, menu_items 6, orders 0, order_items 0, audit_log 0 | LULUS |
+| Checksum backup | `sha256sum /tmp/brew-backup.db` | tercatat | a527538f2bd1053764102a034c11e005c6d33f5ae2b32727ad3cbe293420ee8b | LULUS |
+| Izin berkas DB | `ls -l data/brewpoint.db` | 600, pemilik = user service | -rw------- andiana (cocok dengan User=andiana pada cc-m03.service) | LULUS |
+| Storage terpisah (off-site) | Azure Blob LRS pada storage account terpisah | ada | belum dibuat | BELUM |
+| Penjadwalan harian | systemd timer 02:00 | aktif | belum dibuat | BELUM |
+| Enkripsi/akses terbatas | SAS/identitas hak minimal; enkripsi bila memuat data pribadi | ada | belum | BELUM |
+| Retensi | 7 harian + 4 mingguan | berjalan | belum | BELUM |
+
+## Isu tersisa
+1. Backup masih di /tmp pada disk yang sama dengan sumber dan hilang saat reboot; syarat backup off-site belum terpenuhi.
+2. Belum ada skrip dan timer terjadwal; RPO ≤ 24 jam (TARGET) baru dapat dibuktikan setelah jadwal berjalan beberapa hari.
+3. Database masih berisi data sintetis tanpa transaksi; ulangi setelah aplikasi kasir menulis data (M05).
