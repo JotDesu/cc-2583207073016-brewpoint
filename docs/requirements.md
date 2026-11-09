@@ -28,9 +28,10 @@ sehingga transaksi tercatat rapi dan dapat dipantau pemilik kapan saja.
 - NFR-04 no secret in repository
 
 ## Constraints
-- 1 vCPU
-- 1 GB RAM
-- 20 GB disk
+- 2 vCPU
+- 1 GiB RAM
+- 64 GiB disk (SSD Premium)
+- Budget desain aplikasi: 1 worker + 2 thread
 - Ubuntu Server 24.04
 - public IPv4
 

@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-Proyek "Catatan Tugas" dideploy pada Azure Virtual Machine dengan Ubuntu Server 24.04 LTS,
+Proyek "BrewPoint" dideploy pada Azure Virtual Machine dengan Ubuntu Server 24.04 LTS,
 2 vCPU, RAM sekitar 1 GB (892 MiB), disk 61 GB, dan Public IPv4.
 RAM menjadi batas utama sehingga stack harus ringan.
 Domain dan HTTPS belum digunakan pada tahap ini (dijadwalkan M04).
